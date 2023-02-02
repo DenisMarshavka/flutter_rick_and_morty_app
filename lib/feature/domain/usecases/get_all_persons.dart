@@ -9,7 +9,7 @@ import 'package:rick_and_morty_app/feature/domain/repositories/person_repository
 class GetAllPersons extends UseCase<List<PersonEntity>, PagePersonParams> {
   final PersonRepository personRepository;
 
-  GetAllPersons({required this.personRepository});
+  GetAllPersons(this.personRepository);
 
   @override
   Future<Either<Failure, List<PersonEntity>>> call(

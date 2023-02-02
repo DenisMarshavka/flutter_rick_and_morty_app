@@ -9,7 +9,7 @@ import 'package:rick_and_morty_app/feature/domain/entities/person_entity.dart';
 class SearchPerson extends UseCase<List<PersonEntity>, SearchPersonParams> {
   final PersonRepository personRepository;
 
-  SearchPerson({required this.personRepository});
+  SearchPerson(this.personRepository);
 
   @override
   Future<Either<Failure, List<PersonEntity>>> call(
