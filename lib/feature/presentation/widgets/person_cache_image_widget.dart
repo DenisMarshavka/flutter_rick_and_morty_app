@@ -5,12 +5,12 @@ const String PLACEHOLDER_IMAGE_SOURCE = 'assets/images/noimage.jpeg';
 
 class PersonCacheImage extends StatelessWidget {
   final String? imageUrl;
-  final double width, height;
+  final double? width, height;
   const PersonCacheImage({
     super.key,
     required this.imageUrl,
-    required this.width,
-    required this.height,
+    this.width,
+    this.height,
   });
 
   Widget _imageWidget(ImageProvider imageProvider) => Container(
