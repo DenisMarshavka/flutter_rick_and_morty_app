@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
           backgroundColor: AppColors.mainBackground,
           scaffoldBackgroundColor: AppColors.mainBackground,
         ),
-        home: const HomeScreen(),
+        home: HomeScreen(),
       ),
     );
   }

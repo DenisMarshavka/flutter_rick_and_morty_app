@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -54,12 +53,13 @@ class PersonsList extends StatelessWidget {
         }
 
         return ListView.separated(
+          padding: const EdgeInsets.only(top: 15),
           controller: scrollController,
           itemBuilder: (context, index) {
             if (index < persons.length) {
               return PersonCard(person: persons[index]);
             } else {
-              Timer(Duration(milliseconds: 30), () {
+              Timer(const Duration(milliseconds: 30), () {
                 scrollController
                     .jumpTo(scrollController.position.maxScrollExtent);
               });
