@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:rick_and_morty_app/core/error/exception.dart';
 import 'package:rick_and_morty_app/feature/data/models/person_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';

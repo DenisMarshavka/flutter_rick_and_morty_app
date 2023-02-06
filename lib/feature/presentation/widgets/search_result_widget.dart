@@ -5,7 +5,6 @@ import 'package:rick_and_morty_app/feature/presentation/widgets/person_cache_ima
 
 class SearchResult extends StatelessWidget {
   final PersonEntity personResult;
-
   const SearchResult({super.key, required this.personResult});
 
   @override
@@ -30,9 +29,7 @@ class SearchResult extends StatelessWidget {
             SizedBox(
               height: 300,
               width: double.infinity,
-              child: Container(
-                child: PersonCacheImage(imageUrl: personResult.image),
-              ),
+              child: PersonCacheImage(imageUrl: personResult.image),
             ),
             Padding(
               padding: const EdgeInsets.all(8),

@@ -9,6 +9,7 @@ import 'package:rick_and_morty_app/feature/presentation/widgets/person_card_widg
 
 class PersonsList extends StatelessWidget {
   final scrollController = ScrollController();
+  PersonsList({super.key});
 
   void setupScrollController(BuildContext context) {
     scrollController.addListener(() {

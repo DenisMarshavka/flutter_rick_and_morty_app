@@ -8,7 +8,7 @@ class PersonCacheImage extends StatelessWidget {
   final double? width, height;
   const PersonCacheImage({
     super.key,
-    required this.imageUrl,
+    this.imageUrl,
     this.width,
     this.height,
   });
