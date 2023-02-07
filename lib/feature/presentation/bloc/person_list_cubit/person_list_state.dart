@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:rick_and_morty_app/feature/domain/entities/pagination_list_info_entity.dart';
 import 'package:rick_and_morty_app/feature/domain/entities/person_entity.dart';
 
 abstract class PersonState extends Equatable {
@@ -12,9 +13,11 @@ class PersonEmpty extends PersonState {}
 
 class PersonLoading extends PersonState {
   final List<PersonEntity> oldPersonsList;
+  final PaginationListInfoEntity oldPersonsListInfo;
   final bool isFirstFetch;
 
-  const PersonLoading(this.oldPersonsList, {this.isFirstFetch = false});
+  const PersonLoading(this.oldPersonsList, this.oldPersonsListInfo,
+      {this.isFirstFetch = false});
 
   @override
   List<Object?> get props => [oldPersonsList];
@@ -22,11 +25,15 @@ class PersonLoading extends PersonState {
 
 class PersonLoaded extends PersonState {
   final List<PersonEntity> personsList;
+  final PaginationListInfoEntity personsListInfo;
 
-  const PersonLoaded(this.personsList);
+  const PersonLoaded({
+    required this.personsList,
+    required this.personsListInfo,
+  });
 
   @override
-  List<Object?> get props => [personsList];
+  List<Object?> get props => [personsList, personsListInfo];
 }
 
 class PersonError extends PersonState {

@@ -3,9 +3,8 @@ import 'package:rick_and_morty_app/core/error/exception.dart';
 import 'package:rick_and_morty_app/core/platform/network_info.dart';
 import 'package:rick_and_morty_app/feature/data/datasources/person_local_data_source.dart';
 import 'package:rick_and_morty_app/feature/data/datasources/person_remote_data_source.dart';
-import 'package:rick_and_morty_app/feature/data/models/person_model.dart';
-import 'package:rick_and_morty_app/feature/domain/entities/person_entity.dart';
 import 'package:rick_and_morty_app/core/error/failure.dart';
+import 'package:rick_and_morty_app/feature/domain/entities/persons_list_data_with_pagination_info_entity.dart';
 import 'package:rick_and_morty_app/feature/domain/repositories/person_repository.dart';
 
 class PersonRepositoryImpl implements PersonRepository {
@@ -20,31 +19,34 @@ class PersonRepositoryImpl implements PersonRepository {
   });
 
   @override
-  Future<Either<Failure, List<PersonEntity>>> getAllPersons(int page) =>
-      _getPersons(() => remoteDataSource.getAllPersons(page));
+  Future<Either<Failure, PersonsListDataWithPaginationInfoEntity>>
+      getAllPersons(int page) =>
+          _getPersons(() => remoteDataSource.getAllPersons(page));
 
   @override
-  Future<Either<Failure, List<PersonEntity>>> searchPerson(
+  Future<Either<Failure, PersonsListDataWithPaginationInfoEntity>> searchPerson(
     int page,
     String query,
   ) =>
       _getPersons(() => remoteDataSource.searchPerson(page, query));
 
-  Future<Either<Failure, List<PersonModel>>> _getPersons(
-      Future<List<PersonModel>> Function() getPersons) async {
+  Future<Either<Failure, PersonsListDataWithPaginationInfoEntity>> _getPersons(
+      Future<PersonsListDataWithPaginationInfoEntity> Function()
+          getPersons) async {
     if (await networkInfo.isConnected) {
       try {
-        final remotePerson = await getPersons();
-        localDataSource.personToCache(remotePerson);
+        final remoteDataPersons = await getPersons();
+        localDataSource.personToCache(remoteDataPersons);
 
-        return Right(remotePerson);
+        return Right(remoteDataPersons);
       } on ServerException {
         return Left(ServerFailure());
       }
     }
 
     try {
-      final locationPerson = await localDataSource.getLastPersonsFromCache();
+      final locationPerson =
+          await localDataSource.getLastPersonsListDataFromCache();
       return Right(locationPerson);
     } on CacheException {
       return Left(CacheFailure());

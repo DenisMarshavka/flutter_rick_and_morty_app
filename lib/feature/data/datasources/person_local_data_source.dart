@@ -1,13 +1,18 @@
 import 'dart:convert';
 import 'package:rick_and_morty_app/core/error/exception.dart';
+import 'package:rick_and_morty_app/feature/data/models/pagination_list_info_model.dart';
 import 'package:rick_and_morty_app/feature/data/models/person_model.dart';
+import 'package:rick_and_morty_app/feature/domain/entities/persons_list_data_with_pagination_info_entity.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const CACHED_PERSONS_LIST_KEY = 'CACHED_PERSONS_LIST';
+const CACHED_PERSONS_LIST_INFO_KEY = 'CACHED_PERSONS_LIST_INFO';
 
 abstract class PersonLocalDataSource {
-  Future<List<PersonModel>> getLastPersonsFromCache();
-  Future<void> personToCache(List<PersonModel> persons);
+  Future<PersonsListDataWithPaginationInfoEntity>
+      getLastPersonsListDataFromCache();
+  Future<void> personToCache(
+      PersonsListDataWithPaginationInfoEntity personsListData);
 }
 
 class PersonLocalDataSourceImpl implements PersonLocalDataSource {
@@ -16,25 +21,50 @@ class PersonLocalDataSourceImpl implements PersonLocalDataSource {
   PersonLocalDataSourceImpl({required this.sharedPreferences});
 
   @override
-  Future<List<PersonModel>> getLastPersonsFromCache() async {
+  Future<PersonsListDataWithPaginationInfoEntity>
+      getLastPersonsListDataFromCache() async {
     final jsonPersonsList =
         sharedPreferences.getStringList(CACHED_PERSONS_LIST_KEY);
+    final jsonPersonsListInfo =
+        sharedPreferences.getString(CACHED_PERSONS_LIST_INFO_KEY);
+    late PersonsListDataWithPaginationInfoEntity result = {
+      'data': [],
+      'info': {
+        'count': 0,
+        'pages': 0,
+        'next': null,
+        'prev': null,
+      }
+    } as PersonsListDataWithPaginationInfoEntity;
 
     if (jsonPersonsList?.isNotEmpty == true) {
-      return Future.value(jsonPersonsList!
+      result.data = jsonPersonsList!
           .map((person) => PersonModel.fromJson(json.decode(person)))
-          .toList());
+          .toList();
+
+      if (jsonPersonsListInfo?.isNotEmpty == true) {
+        result.info =
+            PaginationListInfoModel.fromJson(json.decode(jsonPersonsListInfo!));
+
+        return Future.value(result);
+      }
     }
 
     throw CacheException();
   }
 
   @override
-  Future<void> personToCache(List<PersonModel> persons) async {
-    final List<String> jsonPersonsList =
-        persons.map((person) => json.encode(person.toJson())).toList();
+  Future<void> personToCache(
+      PersonsListDataWithPaginationInfoEntity personsListData) async {
+    final List<String> jsonPersonsList = personsListData.data
+        .map((person) => json.encode(person.toJson()))
+        .toList();
+    final String jsonPersonsListInfo =
+        json.encode(personsListData.info.toJson());
 
     sharedPreferences.setStringList(CACHED_PERSONS_LIST_KEY, jsonPersonsList);
+    sharedPreferences.setString(
+        CACHED_PERSONS_LIST_INFO_KEY, jsonPersonsListInfo);
 
     print('Persons to write cache: ${jsonPersonsList.length}');
     await Future.value(jsonPersonsList);
