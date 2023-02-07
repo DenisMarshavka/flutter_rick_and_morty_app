@@ -8,10 +8,7 @@ abstract class PersonState extends Equatable {
   List<Object?> get props => [];
 }
 
-class PersonEmpty extends PersonState {
-  @override
-  List<Object?> get props => [];
-}
+class PersonEmpty extends PersonState {}
 
 class PersonLoading extends PersonState {
   final List<PersonEntity> oldPersonsList;

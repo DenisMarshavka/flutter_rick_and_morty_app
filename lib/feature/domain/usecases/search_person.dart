@@ -14,15 +14,16 @@ class SearchPerson extends UseCase<List<PersonEntity>, SearchPersonParams> {
   @override
   Future<Either<Failure, List<PersonEntity>>> call(
       SearchPersonParams params) async {
-    return await personRepository.searchPerson(params.query);
+    return await personRepository.searchPerson(params.page, params.query);
   }
 }
 
 class SearchPersonParams extends Equatable {
   final String query;
+  final int page;
 
-  const SearchPersonParams({required this.query});
+  const SearchPersonParams({required this.page, required this.query});
 
   @override
-  List<Object?> get props => [query];
+  List<Object?> get props => [query, page];
 }

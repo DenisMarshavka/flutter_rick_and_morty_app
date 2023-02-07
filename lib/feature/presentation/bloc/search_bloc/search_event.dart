@@ -9,6 +9,7 @@ abstract class PersonSearchEvent extends Equatable {
 
 class SearchPersons extends PersonSearchEvent {
   final String personQuery;
+  final int page;
 
-  const SearchPersons(this.personQuery);
+  const SearchPersons(this.page, this.personQuery);
 }

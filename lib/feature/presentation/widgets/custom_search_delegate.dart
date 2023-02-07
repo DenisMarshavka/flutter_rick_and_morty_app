@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -9,13 +10,29 @@ import 'package:rick_and_morty_app/feature/presentation/widgets/search_result_wi
 
 class CustomSearchDelegate extends SearchDelegate {
   final List<String> suggestions;
+  late int page = 0;
   final Function(String newSuggestionValue)? onAddSuggestions;
+  final scrollController = ScrollController();
+
   CustomSearchDelegate({
     required this.suggestions,
+    this.page = 0,
     this.onAddSuggestions,
   }) : super(searchFieldLabel: 'Search for characters...');
 
-  @override
+  void setupScrollController(BuildContext context) {
+    scrollController.addListener(() {
+      if (scrollController.position.atEdge) {
+        page++;
+
+        if (scrollController.position.pixels != 0) {
+          BlocProvider.of<PersonSearchBloc>(context, listen: false)
+            ..add(SearchPersons(page, query));
+        }
+      }
+    });
+  }
+
   Widget build(BuildContext context) {
     return Container();
   }
@@ -36,7 +53,10 @@ class CustomSearchDelegate extends SearchDelegate {
   @override
   Widget? buildLeading(BuildContext context) {
     return IconButton(
-      onPressed: () => close(context, null),
+      onPressed: () {
+        page = 1;
+        close(context, null);
+      },
       tooltip: 'Back',
       icon: const Icon(Icons.arrow_back_outlined),
     );
@@ -44,46 +64,57 @@ class CustomSearchDelegate extends SearchDelegate {
 
   @override
   Widget buildResults(BuildContext context) {
-    print('Inside custom search delegate and search query is $query');
+    print(
+        'Inside custom search delegate and search query is $query, and page $page');
     BlocProvider.of<PersonSearchBloc>(context, listen: false)
-      ..add(SearchPersons(query));
+      ..add(SearchPersons(page, query));
+    setupScrollController(context);
 
     return BlocBuilder<PersonSearchBloc, PersonSearchState>(
       builder: (context, state) {
+        List<PersonEntity> persons = [];
+        bool isLoading = false;
+
+        if (state is PersonSearchLoading && state.isFirstFetch) {
+          return _loadingIndicator();
+        }
         if (state is PersonSearchLoading) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          isLoading = true;
+          persons = state.oldPersons;
         }
 
         if (state is PersonSearchLoaded) {
-          final person = state.persons;
-          if (person.isEmpty) {
+          persons = state.persons;
+
+          if (persons.isEmpty) {
             return _showErrorText('No Characters with that name found');
           }
 
-          if (onAddSuggestions != null) onAddSuggestions!(query);
-          return Container(
-            child: ListView.builder(
-              padding: const EdgeInsets.only(top: 15),
-              itemCount: person.isNotEmpty ? person.length : 0,
-              itemBuilder: (context, index) {
-                PersonEntity result = person[index];
-
-                return SearchResult(personResult: result);
-              },
-            ),
-          );
+          if (onAddSuggestions != null && page == 1) {
+            onAddSuggestions!(query);
+          }
         }
 
         if (state is PersonSearchError) {
           return _showErrorText(state.message);
         }
 
-        return const Center(
-          child: Icon(
-            Icons.now_wallpaper,
-          ),
+        return ListView.builder(
+          controller: scrollController,
+          padding: const EdgeInsets.only(top: 15),
+          itemCount: persons.length + (isLoading ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index < persons.length) {
+              return SearchResult(personResult: persons[index]);
+            } else {
+              Timer(const Duration(milliseconds: 30), () {
+                scrollController
+                    .jumpTo(scrollController.position.maxScrollExtent);
+              });
+
+              return _loadingIndicator();
+            }
+          },
         );
       },
     );
@@ -121,6 +152,8 @@ class CustomSearchDelegate extends SearchDelegate {
         return GestureDetector(
           onTap: () {
             query = _filteredSuggestions[index];
+            page = 1;
+
             showResults(context);
           },
           child: Text(
@@ -135,6 +168,15 @@ class CustomSearchDelegate extends SearchDelegate {
       separatorBuilder: (context, index) =>
           _filteredSuggestions.isNotEmpty ? const Divider() : Container(),
       itemCount: _filteredSuggestions.length,
+    );
+  }
+
+  Widget _loadingIndicator() {
+    return const Padding(
+      padding: EdgeInsets.all(8),
+      child: Center(
+        child: CircularProgressIndicator(),
+      ),
     );
   }
 }
