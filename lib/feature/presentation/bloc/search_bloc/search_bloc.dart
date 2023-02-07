@@ -44,8 +44,7 @@ class PersonSearchBloc extends Bloc<PersonSearchEvent, PersonSearchState> {
         );
       }
     }
-    print('NEXT PAGE: ${event.page}');
-    print('OLD MAX PAGE: ${oldPersonsDataListInfo.pages}');
+
     if (oldPersonsDataListInfo.pages == 0 ||
         event.page <= oldPersonsDataListInfo.pages) {
       emit(PersonSearchLoading(
