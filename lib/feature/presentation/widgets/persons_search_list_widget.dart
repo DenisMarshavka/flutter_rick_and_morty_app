@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:rick_and_morty_app/core/platform/network_info.dart';
 import 'package:rick_and_morty_app/feature/domain/entities/person_entity.dart';
 import 'package:rick_and_morty_app/feature/presentation/bloc/search_bloc/search_bloc.dart';
 import 'package:rick_and_morty_app/feature/presentation/bloc/search_bloc/search_event.dart';
@@ -11,9 +12,11 @@ import 'package:rick_and_morty_app/feature/presentation/widgets/search_result_wi
 class PersonsSearchList extends StatefulWidget {
   final String query;
   final Function(String newSuggestionValue)? onAddSuggestions;
+  final NetworkInfo networkInfo;
   const PersonsSearchList({
     super.key,
     required this.query,
+    required this.networkInfo,
     this.onAddSuggestions,
   });
 
@@ -25,6 +28,7 @@ class _PersonsSearchListState extends State<PersonsSearchList> {
   late int page = 1;
   late bool isLoading = false;
   final scrollController = ScrollController();
+  late bool isNetworkConnected = false;
 
   @override
   void initState() {
@@ -42,8 +46,12 @@ class _PersonsSearchListState extends State<PersonsSearchList> {
 
   void setupScrollController(BuildContext context) {
     scrollController.addListener(() {
-      if (scrollController.position.atEdge) {
-        if (scrollController.position.pixels != 0 && !isLoading) {
+      if (scrollController.hasClients && scrollController.position.atEdge) {
+        _checkNetworkConnection();
+
+        if (scrollController.position.pixels != 0 &&
+            !isLoading &&
+            isNetworkConnected) {
           page++;
 
           BlocProvider.of<PersonSearchBloc>(context, listen: false)
@@ -59,20 +67,15 @@ class _PersonsSearchListState extends State<PersonsSearchList> {
 
     return BlocBuilder<PersonSearchBloc, PersonSearchState>(
       builder: (context, state) {
-        List<PersonEntity> persons = [];
+        final List<PersonEntity> persons =
+            _getSearchedPersons(widget.query, state);
         isLoading = false;
 
         if (state is PersonSearchLoading && state.isFirstFetch) {
           return _loadingIndicator();
         }
-        if (state is PersonSearchLoading) {
-          isLoading = true;
-          persons = state.oldPersons;
-        }
 
         if (state is PersonSearchLoaded) {
-          persons = state.persons;
-
           if (persons.isEmpty) {
             return _showErrorText('No Characters with that name found');
           }
@@ -91,7 +94,7 @@ class _PersonsSearchListState extends State<PersonsSearchList> {
           padding: const EdgeInsets.only(top: 15),
           itemCount: persons.length + (isLoading ? 1 : 0),
           itemBuilder: (context, index) {
-            if (index < persons.length) {
+            if (index < persons.length || isNetworkConnected) {
               return SearchResult(personResult: persons[index]);
             } else {
               Timer(const Duration(milliseconds: 30), () {
@@ -122,6 +125,7 @@ class _PersonsSearchListState extends State<PersonsSearchList> {
       child: Center(
         child: Text(
           errorMessage,
+          textAlign: TextAlign.center,
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -129,5 +133,59 @@ class _PersonsSearchListState extends State<PersonsSearchList> {
         ),
       ),
     );
+  }
+
+  List<PersonEntity> _getSearchedPersons(
+    String query,
+    PersonSearchState state,
+  ) {
+    List<PersonEntity> persons = [];
+
+    if (isNetworkConnected) {
+      isLoading = false;
+
+      if (state is PersonSearchLoading) {
+        isLoading = true;
+        persons = _goFilterPersonsByQuery(state.oldPersons, query);
+      }
+
+      if (state is PersonSearchLoaded) {
+        persons = _goFilterPersonsByQuery(state.persons, query);
+
+        if (widget.onAddSuggestions != null && page == 1) {
+          widget.onAddSuggestions!(widget.query);
+        }
+      }
+    } else {
+      if (state is PersonSearchLoaded) {
+        persons = _goFilterPersonsByQuery(state.persons, query);
+
+        if (persons.isNotEmpty &&
+            widget.onAddSuggestions != null &&
+            page == 1) {
+          widget.onAddSuggestions!(widget.query);
+        }
+      }
+    }
+
+    return persons;
+  }
+
+  List<PersonEntity> _goFilterPersonsByQuery(
+          List<PersonEntity> oldPersons, String query) =>
+      oldPersons
+          .where((element) => element.name
+              .toLowerCase()
+              .trim()
+              .contains(query.toLowerCase().trim()))
+          .toList();
+
+  Future<bool> _checkNetworkConnection() async {
+    final currentNetworkConnectionStatus = await widget.networkInfo.isConnected;
+    setState(() {
+      isNetworkConnected = currentNetworkConnectionStatus;
+    });
+
+    return currentNetworkConnectionStatus;
   }
 }

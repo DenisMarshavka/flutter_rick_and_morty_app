@@ -10,7 +10,8 @@ import 'package:rick_and_morty_app/feature/presentation/bloc/search_bloc/search_
 import 'package:rick_and_morty_app/feature/presentation/bloc/search_bloc/search_state.dart';
 
 const SERVER_FAILURE_MESSAGE = 'Server Failure';
-const CACHED_FAILURE_MESSAGE = 'Cache Failure';
+const CACHED_FAILURE_MESSAGE =
+    'Cache Failure, please check your connection to Network';
 
 class PersonSearchBloc extends Bloc<PersonSearchEvent, PersonSearchState> {
   final SearchPerson searchPerson;

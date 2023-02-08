@@ -7,7 +7,8 @@ import 'package:rick_and_morty_app/feature/domain/usecases/get_all_persons.dart'
 import 'package:rick_and_morty_app/feature/presentation/bloc/person_list_cubit/person_list_state.dart';
 
 const SERVER_FAILURE_MESSAGE = 'Server Failure';
-const CACHED_FAILURE_MESSAGE = 'Cache Failure';
+const CACHED_FAILURE_MESSAGE =
+    'Cache Failure, please check your connection to Network';
 
 class PersonListCubit extends Cubit<PersonState> {
   final GetAllPersons getAllPersons;

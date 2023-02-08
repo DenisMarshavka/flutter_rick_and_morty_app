@@ -19,7 +19,8 @@ class PersonsList extends StatelessWidget {
         final bool isNetworkConnected = await networkInfo.isConnected;
 
         if (scrollController.position.pixels != 0 && isNetworkConnected) {
-          context.read<PersonListCubit>().loadPersons();
+          BlocProvider.of<PersonListCubit>(context, listen: false)
+              .loadPersons();
         }
       }
     });
@@ -48,11 +49,14 @@ class PersonsList extends StatelessWidget {
         }
 
         if (state is PersonError) {
-          return Text(
-            state.message,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 25,
+          return Center(
+            child: Text(
+              state.message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 25,
+              ),
             ),
           );
         }

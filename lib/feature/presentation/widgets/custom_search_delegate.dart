@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:rick_and_morty_app/feature/presentation/widgets/persons_search_list_widget.dart';
 
 class CustomSearchDelegate extends SearchDelegate {
@@ -45,6 +46,7 @@ class CustomSearchDelegate extends SearchDelegate {
     return PersonsSearchList(
       query: query,
       onAddSuggestions: onAddSuggestions,
+      networkInfo: GetIt.instance(),
     );
   }
 
