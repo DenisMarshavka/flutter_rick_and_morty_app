@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
+
 import 'package:rick_and_morty_app/feature/presentation/widgets/custom_search_delegate.dart';
 import 'package:rick_and_morty_app/feature/presentation/widgets/persons_list_widget.dart';
 
@@ -34,7 +36,9 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: PersonsList(),
+      body: PersonsList(
+        networkInfo: GetIt.instance(),
+      ),
     );
   }
 

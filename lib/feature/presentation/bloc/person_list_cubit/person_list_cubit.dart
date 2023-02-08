@@ -14,6 +14,7 @@ class PersonListCubit extends Cubit<PersonState> {
 
   PersonListCubit({required this.getAllPersons}) : super(PersonEmpty());
   int page = 1;
+  late int perPage = 20;
 
   Future<void> loadPersons() async {
     if (state is PersonLoading) return;
@@ -28,6 +29,7 @@ class PersonListCubit extends Cubit<PersonState> {
     if (currentState is PersonLoaded) {
       oldPersons = currentState.personsList;
       oldPersonsDataListInfo = currentState.personsListInfo;
+      page = oldPersons.isNotEmpty ? oldPersons.length ~/ perPage + 1 : 1;
     }
 
     if (oldPersonsDataListInfo.pages == 0 ||
@@ -47,7 +49,6 @@ class PersonListCubit extends Cubit<PersonState> {
           (error) => emit(PersonError(message: _mapFailureToMessage(error))),
           (character) {
         final persons = (state as PersonLoading).oldPersonsList;
-        page++;
 
         persons.addAll(character.data);
         personsDataListInfo = character.info;

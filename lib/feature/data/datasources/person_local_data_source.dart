@@ -60,8 +60,7 @@ class PersonLocalDataSourceImpl implements PersonLocalDataSource {
     final List<String> jsonPersonsList = personsListData.data
         .map((person) => json.encode(person.toJson()))
         .toList();
-    final String jsonPersonsListInfo =
-        json.encode(personsListData.info.toJson());
+    final String jsonPersonsListInfo = json.encode(personsListData);
 
     sharedPreferences.setStringList(CACHED_PERSONS_LIST_KEY, jsonPersonsList);
     sharedPreferences.setString(

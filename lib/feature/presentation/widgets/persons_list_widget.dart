@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:rick_and_morty_app/core/platform/network_info.dart';
 import 'package:rick_and_morty_app/feature/domain/entities/person_entity.dart';
 import 'package:rick_and_morty_app/feature/presentation/bloc/person_list_cubit/person_list_cubit.dart';
 import 'package:rick_and_morty_app/feature/presentation/bloc/person_list_cubit/person_list_state.dart';
@@ -9,12 +10,15 @@ import 'package:rick_and_morty_app/feature/presentation/widgets/person_card_widg
 
 class PersonsList extends StatelessWidget {
   final scrollController = ScrollController();
-  PersonsList({super.key});
+  late NetworkInfo networkInfo;
+  PersonsList({super.key, required this.networkInfo});
 
   void setupScrollController(BuildContext context) {
-    scrollController.addListener(() {
-      if (scrollController.position.atEdge) {
-        if (scrollController.position.pixels != 0) {
+    scrollController.addListener(() async {
+      if (scrollController.hasClients && scrollController.position.atEdge) {
+        final bool isNetworkConnected = await networkInfo.isConnected;
+
+        if (scrollController.position.pixels != 0 && isNetworkConnected) {
           context.read<PersonListCubit>().loadPersons();
         }
       }
